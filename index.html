@@ -69,27 +69,31 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
 @media (min-width:900px){.grid{grid-template-columns:1fr 1fr 1fr;gap:14px}}
 
 .card{background:var(--card);border-radius:14px;box-shadow:var(--shadow);overflow:hidden;min-width:0}
-.card-h{display:flex;align-items:center;gap:8px;padding:9px 14px 2px}
-.card-h h2{margin:0;font-size:16px;font-weight:700;letter-spacing:-.01em}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px 2px}
+.card-h > div{display:flex;align-items:baseline;gap:8px;min-width:0}
+.card-h h2{margin:0;font-size:16px;font-weight:700;letter-spacing:-.01em;line-height:1.2;flex:none}
+.card-h p{margin:0;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card-h .ccy{font-size:11px;font-weight:600;color:var(--ink2);background:var(--card2);border:1px solid var(--line);
   border-radius:5px;padding:1px 6px}
-.card-h .asof{margin-left:auto;font-size:12px;color:var(--muted)}
 .notice{margin:2px 14px 4px;font-size:12px;color:var(--orange);background:color-mix(in srgb,var(--orange) 10%,transparent);
   border-radius:7px;padding:5px 9px}
 
 .rows{list-style:none;margin:0;padding:0 6px 5px}
-.row{display:grid;grid-template-columns:1fr auto 6.4em 12px;column-gap:10px;align-items:center;width:100%;text-align:left;
+.row{display:grid;grid-template-columns:1fr auto 12px;column-gap:12px;align-items:center;width:100%;text-align:left;
   background:none;border:0;border-radius:9px;padding:8px 8px;cursor:pointer;border-top:1px solid var(--line);min-height:44px}
 .rows li:first-child .row{border-top-color:transparent}
 .row:active{background:var(--card2)}
 .row[aria-expanded="true"]{background:var(--sel);border-top-color:transparent;border-radius:9px 9px 0 0}
 .rows li:has(.row[aria-expanded="true"]) + li .row{border-top-color:transparent}
-.lbl{font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.num{font-size:20px;font-weight:600;letter-spacing:-.02em;line-height:1.1;text-align:right}
+.name{min-width:0}
+.lbl{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap}
+.sw{width:10px;height:10px;border-radius:3px;flex:none}
+.asof{display:block;font-size:12px;color:var(--muted);margin:2px 0 0 18px;white-space:nowrap}
+.val{text-align:right}
+.num{display:block;font-size:20px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
 .num small{font-size:16px;font-weight:500;color:var(--ink2);margin-left:1px}
 .num small.cur{margin:0 1px 0 0}
-.chg{font-size:12px;font-weight:600;white-space:nowrap;text-align:right}
-.chg .pct{display:block;font-weight:500;margin-top:1px}
+.chg{display:inline-block;font-size:12px;font-weight:600;white-space:nowrap;margin-top:3px}
 .up{color:var(--green)}.dn{color:var(--red)}.flat{color:var(--muted)}
 .foot{display:flex;justify-content:space-between;gap:10px;padding:6px 14px 10px;border-top:1px solid var(--line);font-size:11.5px;color:var(--muted)}
 .foot a{color:var(--blue);text-decoration:none;font-weight:500;white-space:nowrap}
@@ -120,7 +124,9 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
   .wrap{padding-bottom:10px}
   .grid{flex:1;display:flex;flex-direction:column;align-items:stretch}
   .card,.rows,.rows li{flex:1;display:flex;flex-direction:column}
-  .row{flex:1;align-content:center;padding:6px 8px;grid-template-columns:1fr auto 5.6em 12px;column-gap:8px}
+  .row{flex:1;padding:6px 8px}
+  .lbl{font-size:15px}
+  .chg{font-size:12.5px}
   .num{font-size:24px}
   .num small{font-size:18px}
   .foot{padding:5px 14px 8px}
@@ -159,7 +165,7 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
 
   const SECTIONS = {
     sofr: {
-      title: "SOFR", ccy: "USD", sub: "Secured Overnight Financing Rate, New York Fed",
+      title: "SOFR", ccy: "USD", sub: "Secured Overnight Financing Rate",
       kind: "rate", sources: ["NY Fed (SOFR)"],
       when: "Updates about 8:00 AM ET", site: "newyorkfed.org",
       url: "https://www.newyorkfed.org/markets/reference-rates/sofr-averages-and-index",
@@ -169,7 +175,7 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
       ],
     },
     sonia: {
-      title: "SONIA", ccy: "GBP", sub: "Sterling Overnight Index Average, Bank of England",
+      title: "SONIA", ccy: "GBP", sub: "Sterling Overnight Index Average",
       kind: "rate", sources: ["Bank of England (SONIA)"],
       when: "Updates about 9:00 AM London", site: "bankofengland.co.uk",
       url: "https://www.bankofengland.co.uk/markets/sonia-benchmark",
@@ -179,7 +185,7 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
       ],
     },
     fx: {
-      title: "Exchange Rates", ccy: "ECB", sub: "ECB Reference Rates, Indicative Mid",
+      title: "Exchange Rates", ccy: "USD", sub: "ECB Reference Rates",
       kind: "fx", sources: ["ECB (FX)"],
       when: "Updates about 4:00 PM Frankfurt", site: "ecb.europa.eu",
       url: "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html",
@@ -209,8 +215,7 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
   }
 
   // Rates move in basis points, FX in percent
-  // FX shows the amount with the percent stacked below it, or in brackets when inline
-  function changeHTML(sec, s, from, to, title, inline) {
+  function changeHTML(sec, s, from, to, title) {
     const diff = to - from;
     if (sec.kind === "rate") {
       const r = Math.round(diff * 100 * 100) / 100;
@@ -220,7 +225,7 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
     if (Math.abs(diff) < Math.pow(10, -s.dp) / 2) return `<span class="chg flat" title="${title}">Unchanged</span>`;
     const pct = diff / from * 100;
     const p = fmtNum(Math.abs(pct), 2) + "%";
-    return `<span class="chg ${diff > 0 ? "up" : "dn"}" title="${title}">${diff > 0 ? "▲" : "▼"} ${fmtNum(Math.abs(diff), s.dp)}${inline ? ` (${p})` : `<span class="pct">${p}</span>`}</span>`;
+    return `<span class="chg ${diff > 0 ? "up" : "dn"}" title="${title}">${diff > 0 ? "▲" : "▼"} ${fmtNum(Math.abs(diff), s.dp)} (${p})</span>`;
   }
 
   const CHEV = `<svg class="chev" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>`;
@@ -229,7 +234,6 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
     const sec = SECTIONS[id], el = document.getElementById(id);
     const m = (state.data && state.data.metrics) || {};
     const errs = ((state.data && state.data.errors) || []).filter((e) => sec.sources.includes(e.source));
-    const latest = sec.series.map((s) => lastTwo(m[s.key])).filter(Boolean).reduce((a, lt) => (lt.d > a ? lt.d : a), "");
     const rows = sec.series.map((s) => {
       const lt = lastTwo(m[s.key]);
       const open = state.open === s.key;
@@ -237,16 +241,16 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
       const chg = !lt ? `<span class="chg flat">–</span>`
         : lt.pv == null ? `<span class="chg flat">No prior</span>`
         : changeHTML(sec, s, lt.pv, lt.v, `Change from ${fmtDate(lt.pd, true)}`);
-      const stale = lt && latest && lt.d !== latest ? ` <span class="flat" style="font-weight:400;font-size:12px">${fmtDate(lt.d, false)}</span>` : "";
       return `<li><button class="row" type="button" data-key="${s.key}" aria-expanded="${open}" aria-controls="p-${s.key}">
-        <span class="lbl">${esc(s.label)}${stale}</span><span class="num">${value}</span>${chg}${CHEV}</button>
+        <span class="name"><span class="lbl"><span class="sw" style="background:var(${s.color})"></span>${esc(s.label)}</span>
+          <span class="asof">${lt ? "As of " + fmtDate(lt.d, false) : "Not available"}</span></span>
+        <span class="val"><span class="num">${value}</span>${chg}</span>${CHEV}</button>
         ${open ? `<div class="panel" id="p-${s.key}"><div class="chart-h"><span class="chart-t" id="ct-${s.key}"></span>
           <div class="seg" role="group" aria-label="Chart range">${RANGES.map(([r]) => `<button type="button" data-range="${r}" aria-pressed="${state.range === r}">${r}</button>`).join("")}</div></div>
           <div class="chart" data-chart="${s.key}"></div></div>` : ""}</li>`;
     }).join("");
     el.innerHTML = `
-      <div class="card-h" title="${esc(sec.sub)}"><h2>${sec.title}</h2><span class="ccy">${sec.ccy}</span>
-        <span class="asof">${latest ? "As of " + fmtDate(latest, false) : "Not available"}</span></div>
+      <div class="card-h"><div><h2>${sec.title}</h2><p>${esc(sec.sub)}</p></div><span class="ccy">${sec.ccy}</span></div>
       ${errs.length ? `<div class="notice">${errs.map((e) => esc(e.source.replace(/ \(.*/, "")) + " did not respond." + (state.data.fromCache ? "" : " Showing saved values.")).join(" ")}</div>` : ""}
       <ul class="rows">${rows}</ul>
       <div class="foot"><span>${esc(sec.when)}</span><a href="${sec.url}" target="_blank" rel="noopener">${esc(sec.site)} ↗</a></div>`;
@@ -284,7 +288,7 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
     const start = ed.toISOString().slice(0, 10);
     const vis = pts.filter(([d]) => d >= start);
     if (!vis.length) { box.innerHTML = `<div class="empty">No data in this range.</div>`; title.textContent = ""; return; }
-    title.innerHTML = vis.length > 1 ? `${state.range} ${changeHTML(sec, s, vis[0][1], vis[vis.length - 1][1], `Change from ${fmtDate(vis[0][0], true)}`, true)}` : "";
+    title.innerHTML = vis.length > 1 ? `${state.range} ${changeHTML(sec, s, vis[0][1], vis[vis.length - 1][1], `Change from ${fmtDate(vis[0][0], true)}`)}` : "";
 
     const W = Math.max(box.clientWidth, 240), H = box.clientHeight;
     const P = { l: 6, r: 46, t: 10, b: 22 };
