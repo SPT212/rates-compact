@@ -1,6 +1,6 @@
 // Netlify Function: GET /api/rates
 // Pulls SOFR + SOFR averages (NY Fed), SONIA + SONIA Compounded Index (Bank of England),
-// and USD/GBP, USD/JPY reference rates (ECB via Frankfurter). Returns one JSON payload.
+// and GBP/USD, USD/JPY reference rates (ECB via Frankfurter). Returns one JSON payload.
 
 const UA = "Mozilla/5.0 (compatible; EmastraRates/1.0)";
 const DAY = 86400000;
@@ -80,7 +80,8 @@ async function fx(from) {
   const j = await getJSON(`https://api.frankfurter.dev/v1/${from}..?from=USD&to=GBP,JPY`);
   const dates = Object.keys(j.rates).sort();
   return {
-    usd_gbp: dates.map((d) => [d, j.rates[d].GBP]),
+    // ECB quotes against EUR; Frankfurter crosses to USD, and GBP is inverted to USD per 1 GBP
+    gbp_usd: dates.map((d) => [d, +(1 / j.rates[d].GBP).toFixed(5)]),
     usd_jpy: dates.map((d) => [d, j.rates[d].JPY]),
   };
 }

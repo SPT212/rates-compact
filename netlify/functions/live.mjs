@@ -1,9 +1,9 @@
 // Netlify Function: GET /api/live
-// Intraday USD/GBP and USD/JPY from Twelve Data. The API key lives in the Netlify
+// Intraday GBP/USD and USD/JPY from Twelve Data. The API key lives in the Netlify
 // environment variable TWELVE_DATA_API_KEY, never in the repo. Cached 5 minutes at
 // Netlify's edge so the free plan (800 credits a day, 2 per call) is never exhausted.
 
-const PAIRS = { usd_gbp: "USD/GBP", usd_jpy: "USD/JPY" };
+const PAIRS = { gbp_usd: "GBP/USD", usd_jpy: "USD/JPY" };
 
 const reply = (body, cdn) => new Response(JSON.stringify(body), {
   status: body.error ? 502 : 200,

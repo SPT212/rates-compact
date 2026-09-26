@@ -160,7 +160,7 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
 <script>
 (() => {
   const API = "/api/rates";
-  const CACHE_KEY = "emastra-rates-v1";
+  const CACHE_KEY = "emastra-rates-v2";
   const RANGES = [["1M", 1], ["3M", 3], ["6M", 6], ["1Y", 12]];
 
   const SECTIONS = {
@@ -191,8 +191,8 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
       liveSub: "Live Market Rates", liveWhen: "Live via Twelve Data, charts ECB daily",
       url: "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html",
       series: [
-        { key: "usd_gbp", label: "1 USD in Pounds", sym: "£", color: "--s2", dp: 4 },
-        { key: "usd_jpy", label: "1 USD in Yen", sym: "¥", color: "--s3", dp: 2 },
+        { key: "gbp_usd", label: "1 GBP to USD", sym: "$", color: "--s2", dp: 4 },
+        { key: "usd_jpy", label: "1 USD to JPY", sym: "¥", color: "--s3", dp: 2 },
       ],
     },
   };
@@ -392,7 +392,7 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
     try {
       const f = await j(`https://api.frankfurter.dev/v1/${from}..?from=USD&to=GBP,JPY`);
       const ds = Object.keys(f.rates).sort();
-      metrics.usd_gbp = ds.map((d) => [d, f.rates[d].GBP]);
+      metrics.gbp_usd = ds.map((d) => [d, +(1 / f.rates[d].GBP).toFixed(5)]);
       metrics.usd_jpy = ds.map((d) => [d, f.rates[d].JPY]);
     } catch { errors.push({ source: "ECB (FX)" }); }
     errors.push({ source: "Bank of England (SONIA)" });
