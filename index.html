@@ -45,15 +45,16 @@ html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;
   font-feature-settings:"tnum" 1,"cv11" 1;-webkit-font-smoothing:antialiased}
 button,input,select{font:inherit;color:inherit}
+button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 :focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:6px}
 
-.wrap{max-width:1180px;margin:0 auto;padding:18px 16px 32px}
+.wrap{max-width:1180px;margin:0 auto;padding:18px max(16px,env(safe-area-inset-right,0px)) 32px max(16px,env(safe-area-inset-left,0px))}
 .top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:6px 2px 16px}
 .top h1{margin:0;font-size:30px;line-height:1.05;font-weight:700;letter-spacing:-.02em}
 .top .org{font-size:13px;color:var(--muted);margin-top:4px}
 .refresh{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line2);background:var(--card);
   border-radius:999px;padding:9px 14px;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;box-shadow:var(--shadow);
-  min-height:40px}
+  min-height:44px}
 .refresh svg{width:16px;height:16px}
 .refresh.busy svg{animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -62,16 +63,18 @@ button,input,select{font:inherit;color:inherit}
 .status.warn .dot{background:var(--orange)}
 .status.err .dot{background:var(--red)}
 
-.grid{display:grid;gap:14px;grid-template-columns:1fr;align-items:start}
+/* grid-auto-rows:1fr gives every rate tile the height of the tallest one */
+.grid{display:grid;gap:14px;grid-template-columns:1fr;grid-auto-rows:1fr}
 @media (min-width:760px){.grid{grid-template-columns:1fr 1fr}.fx{grid-column:1 / -1}}
 @media (min-width:1100px){.grid{grid-template-columns:1fr 1fr 1fr}.fx{grid-column:auto}}
 
-.card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;min-width:0}
+.card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;min-width:0;display:flex;flex-direction:column}
+.conv-card{margin-top:14px}
 .card-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:16px 16px 8px}
 .card-h h2{margin:0;font-size:19px;font-weight:700;letter-spacing:-.01em}
 .card-h .ccy{font-size:12px;font-weight:600;color:var(--ink2);background:var(--card2);border:1px solid var(--line);
   border-radius:6px;padding:2px 7px}
-.card-h p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+.card-h p{margin:2px 0 0;font-size:12.5px;color:var(--muted);min-height:2.9em}
 .notice{margin:0 16px 8px;font-size:12.5px;color:var(--orange);background:color-mix(in srgb,var(--orange) 10%,transparent);
   border-radius:8px;padding:7px 10px}
 
@@ -79,6 +82,7 @@ button,input,select{font:inherit;color:inherit}
 .row{display:grid;grid-template-columns:10px 1fr auto;column-gap:10px;align-items:center;width:100%;text-align:left;
   background:none;border:0;border-radius:10px;padding:11px 8px;cursor:pointer;border-top:1px solid var(--line)}
 .rows li:first-child .row{border-top-color:transparent}
+.row:active{background:var(--card2)}
 .row[aria-pressed="true"]{background:var(--sel);border-top-color:transparent}
 .rows li:has(.row[aria-pressed="true"]) + li .row{border-top-color:transparent}
 .sw{width:10px;height:10px;border-radius:3px;align-self:start;margin-top:6px}
@@ -94,9 +98,10 @@ button,input,select{font:inherit;color:inherit}
 .chart-t{font-size:12.5px;color:var(--ink2);font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .seg{display:inline-flex;background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:2px;flex:none}
 .seg button{border:0;background:none;padding:5px 9px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;min-width:36px}
+@media (pointer:coarse){.seg button{min-height:34px;min-width:42px}}
 .seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(22,40,63,.12)}
-.chart{position:relative;height:210px;margin:0 8px 12px;touch-action:pan-y;user-select:none;-webkit-user-select:none}
-.chart svg{display:block;width:100%;height:100%;overflow:visible}
+.chart{position:relative;flex:1 1 auto;min-height:210px;margin:0 8px 12px;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.chart svg{position:absolute;inset:0;display:block;width:100%;height:100%;overflow:visible}
 .chart .ax{font-size:10.5px;fill:var(--muted)}
 .chart .gl{stroke:var(--line);stroke-width:1}
 .tip{position:absolute;top:4px;pointer-events:none;background:var(--ink);color:var(--card);border-radius:8px;padding:6px 9px;
@@ -106,14 +111,13 @@ button,input,select{font:inherit;color:inherit}
 .tip i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;font-style:normal}
 .empty{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;color:var(--muted);text-align:center;padding:0 24px}
 
-.conv{border-top:1px solid var(--line);padding:14px 16px 16px;background:var(--card2);container-type:inline-size}
-.conv h3{margin:0 0 10px;font-size:14px;font-weight:700}
+.conv{padding:4px 16px 16px;container-type:inline-size}
 .conv-g{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end}
 .fld{display:flex;flex-direction:column;gap:4px;min-width:0}
 .fld label{font-size:12px;color:var(--muted)}
 .box{display:flex;border:1px solid var(--line2);border-radius:10px;background:var(--card);overflow:hidden}
 .box input{flex:1;min-width:0;border:0;background:none;padding:10px;font-size:17px;font-weight:600;outline:none}
-.box select{border:0;border-left:1px solid var(--line);background:var(--card2);padding:0 8px;font-size:14px;font-weight:600;cursor:pointer}
+.box select{border:0;border-left:1px solid var(--line);background:var(--card2);padding:0 8px;font-size:16px;font-weight:600;cursor:pointer}
 .box output{flex:1;min-width:0;padding:10px;font-size:17px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .box:focus-within{border-color:var(--blue)}
 .swap{width:40px;height:44px;border:1px solid var(--line2);border-radius:10px;background:var(--card);cursor:pointer;display:grid;place-items:center}
@@ -151,6 +155,7 @@ button,input,select{font:inherit;color:inherit}
     <section class="card" id="sonia"></section>
     <section class="card fx" id="fx"></section>
   </main>
+  <section class="card conv-card" id="conv"></section>
 
   <footer class="notes">
     <h2>Sources and Timing</h2>
@@ -251,12 +256,10 @@ button,input,select{font:inherit;color:inherit}
       ${errs.length ? `<div class="notice">${errs.map((e) => esc(e.source.replace(/ \(.*/, "")) + " did not respond. " + (state.data.fromCache ? "" : "Showing the last saved values.")).join(" ")}</div>` : ""}
       <ul class="rows">${rows}</ul>
       <div class="chart-h"><span class="chart-t">${esc(chartTitle)}</span><div class="seg" role="group" aria-label="Chart range">${segs}</div></div>
-      <div class="chart" data-chart="${id}"></div>
-      ${id === "fx" ? converterHTML() : ""}`;
+      <div class="chart" data-chart="${id}"></div>`;
     el.querySelectorAll(".row").forEach((b) => b.addEventListener("click", () => { state.sel[id] = b.dataset.key; renderSection(id); }));
     el.querySelectorAll(".seg button").forEach((b) => b.addEventListener("click", () => { state.range[id] = b.dataset.range; renderSection(id); }));
     drawChart(id);
-    if (id === "fx") wireConverter();
   }
 
   // ---------- chart ----------
@@ -369,7 +372,8 @@ button,input,select{font:inherit;color:inherit}
   }
   function converterHTML() {
     const opt = (sel) => Object.keys(CCY).map((c) => `<option ${c === sel ? "selected" : ""}>${c}</option>`).join("");
-    return `<div class="conv"><h3>Currency Converter</h3>
+    return `<div class="card-h"><div><h2>Currency Converter</h2><p>USD, GBP and JPY at ECB Reference Rates</p></div></div>
+      <div class="conv">
       <div class="conv-g">
         <div class="fld"><label for="cvAmt">Amount</label>
           <div class="box"><input id="cvAmt" inputmode="decimal" autocomplete="off" value="${esc(conv.amt)}" aria-label="Amount to convert">
@@ -462,9 +466,16 @@ button,input,select{font:inherit;color:inherit}
     btn.classList.remove("busy"); btn.disabled = false;
   }
 
-  function renderAll() { Object.keys(SECTIONS).forEach(renderSection); }
+  function renderAll() { Object.keys(SECTIONS).forEach(renderSection); $("#conv").innerHTML = converterHTML(); wireConverter(); }
 
-  let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => Object.keys(SECTIONS).forEach(drawChart), 120); });
+  // Charts stretch to fill their tile, so redraw whenever a chart area changes size
+  const chartSize = {};
+  const ro = new ResizeObserver((entries) => entries.forEach((e) => {
+    const id = e.target.id, box = e.target.querySelector(".chart");
+    const k = box ? box.clientWidth + "x" + box.clientHeight : "";
+    if (k && chartSize[id] !== k) { chartSize[id] = k; drawChart(id); }
+  }));
+  Object.keys(SECTIONS).forEach((id) => ro.observe(document.getElementById(id)));
   matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => Object.keys(SECTIONS).forEach(drawChart));
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && state.data && Date.now() - Date.parse(state.data.generatedAt) > 30 * 60e3) refresh(false);
