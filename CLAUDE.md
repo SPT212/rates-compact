@@ -19,7 +19,7 @@ Personal mobile dashboard for SOFR, SONIA and GBP/USD, USD/JPY. Hosted on Netlif
 
 ## Style rules (always follow)
 - Never use em dashes or double hyphens in any text the user sees, including copy, labels, comments in the UI and commit messages.
-- Title Case for terms and labels: 30-Day, 90-Day, Overnight, 1 GBP to USD, 1 USD to JPY, ECB Reference Rates, Indicative Mid, Exchange Rates.
+- Title Case for terms and labels: 30-Day, 90-Day, Overnight, 1 GBP in USD, 1 USD in JPY, ECB Reference Rates, Indicative Mid, Exchange Rates.
 - Do not use the word "compounded" in the UI.
 - Visual system matches cremx.netlify.app: Inter, canvas #EDF0F4, cards #FFFFFF, ink #16283F, blue #2C6FB5, orange #D2761C, green #1D7A4A (up), red #C22B2B (down). Dark mode tokens live in the same `:root` block.
 - Mobile first. Check every change at 390px wide as well as desktop.
