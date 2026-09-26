@@ -26,4 +26,4 @@ Personal mobile dashboard for SOFR, SONIA and USD/GBP, USD/JPY. Hosted on Netlif
 - Preview locally: `npx netlify-cli dev` then open http://localhost:8888 (runs the function too).
 - Deploy: commit and push to `main`. Netlify publishes in about a minute.
 - Roll back: Netlify dashboard, Deploys, choose an earlier deploy, Publish deploy.
-- After deploying, check https://<site>.netlify.app/api/rates returns `"errors":[]`.
+- After deploying, check https://rates-compact.netlify.app/api/rates returns `"errors":[]`.
