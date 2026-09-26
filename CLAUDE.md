@@ -5,6 +5,7 @@ Personal mobile dashboard for SOFR, SONIA and USD/GBP, USD/JPY. Hosted on Netlif
 ## Files
 - `index.html`: the whole app (HTML, CSS, JS in one file, no build step)
 - `netlify/functions/rates.mjs`: server function at `/api/rates`, fetches all data and returns one JSON payload, cached 30 minutes at Netlify's edge
+- `netlify/functions/live.mjs`: server function at `/api/live`, intraday USD/GBP and USD/JPY from Twelve Data, cached 5 minutes at Netlify's edge
 - `netlify.toml`: Netlify config (publish root, functions folder)
 - `manifest.webmanifest`, `icon-180.png`, `icon-512.png`: iPhone home screen app
 
@@ -12,7 +13,8 @@ Personal mobile dashboard for SOFR, SONIA and USD/GBP, USD/JPY. Hosted on Netlif
 - SOFR Overnight, 30-Day, 90-Day: NY Fed Markets API (`/api/rates/secured/sofr/last/N.json`, `/sofrai/last/N.json`)
 - SONIA Overnight: Bank of England IADB CSV, series IUDSOIA. BoE blocks browser requests, so it must be fetched in the function.
 - SONIA 30-Day, 90-Day: calculated in the function from BoE series IUDZOS2 (SONIA index), ACT/365, exact N calendar-day window with the start index rolled forward from the prior business day at that day's rate. This method reproduces the NY Fed's published SOFR averages exactly; keep it.
-- FX: ECB reference rates via api.frankfurter.dev
+- FX history and fallback: ECB reference rates via api.frankfurter.dev. Charts always use this daily series.
+- FX live: Twelve Data `/quote` for USD/GBP and USD/JPY. Needs the Netlify environment variable `TWELVE_DATA_API_KEY` (never commit the key). Free plan is 800 credits a day and each call costs 2, so keep the 5 minute edge cache. If the key is missing or the call fails, the FX rows fall back to ECB.
 - Not available free: CME Term SOFR (licensed), Xe (paid API)
 
 ## Style rules (always follow)

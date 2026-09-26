@@ -188,6 +188,7 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
       title: "Exchange Rates", ccy: "USD", sub: "ECB Reference Rates",
       kind: "fx", sources: ["ECB (FX)"],
       when: "Updates about 4:00 PM Frankfurt", site: "ecb.europa.eu",
+      liveSub: "Live Market Rates", liveWhen: "Live via Twelve Data, charts ECB daily",
       url: "https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html",
       series: [
         { key: "usd_gbp", label: "1 USD in Pounds", sym: "£", color: "--s2", dp: 4 },
@@ -197,7 +198,8 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
   };
 
   // open: the one series whose chart is showing, or null when every chart is collapsed
-  const state = { data: null, range: "3M", open: null };
+  // live: intraday FX from /api/live, shown on the FX rows when available; charts stay on ECB history
+  const state = { data: null, live: null, range: "3M", open: null };
   const $ = (s, r = document) => r.querySelector(s);
   const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
   const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -236,24 +238,30 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
     const errs = ((state.data && state.data.errors) || []).filter((e) => sec.sources.includes(e.source));
     const rows = sec.series.map((s) => {
       const lt = lastTwo(m[s.key]);
+      const lv = liveFor(id, s.key);
       const open = state.open === s.key;
-      const value = !lt ? "–" : sec.kind === "rate" ? `${fmtNum(lt.v, s.dp)}<small>%</small>` : `<small class="cur">${s.sym}</small>${fmtNum(lt.v, s.dp)}`;
-      const chg = !lt ? `<span class="chg flat">–</span>`
+      const v = lv ? lv.price : lt && lt.v;
+      const value = v == null ? "–" : sec.kind === "rate" ? `${fmtNum(v, s.dp)}<small>%</small>` : `<small class="cur">${s.sym}</small>${fmtNum(v, s.dp)}`;
+      const chg = lv ? (lv.prev == null ? `<span class="chg flat">–</span>` : changeHTML(sec, s, lv.prev, lv.price, "Change from previous close"))
+        : !lt ? `<span class="chg flat">–</span>`
         : lt.pv == null ? `<span class="chg flat">No prior</span>`
         : changeHTML(sec, s, lt.pv, lt.v, `Change from ${fmtDate(lt.pd, true)}`);
+      const asof = lv ? `${lv.open ? "Live" : "Last"} ${timeStr(lv.at)}${lt ? `, ECB ${s.sym}${fmtNum(lt.v, s.dp)}` : ""}`
+        : lt ? "As of " + fmtDate(lt.d, false) : "Not available";
       return `<li><button class="row" type="button" data-key="${s.key}" aria-expanded="${open}" aria-controls="p-${s.key}">
         <span class="name"><span class="lbl"><span class="sw" style="background:var(${s.color})"></span>${esc(s.label)}</span>
-          <span class="asof">${lt ? "As of " + fmtDate(lt.d, false) : "Not available"}</span></span>
+          <span class="asof">${asof}</span></span>
         <span class="val"><span class="num">${value}</span>${chg}</span>${CHEV}</button>
         ${open ? `<div class="panel" id="p-${s.key}"><div class="chart-h"><span class="chart-t" id="ct-${s.key}"></span>
           <div class="seg" role="group" aria-label="Chart range">${RANGES.map(([r]) => `<button type="button" data-range="${r}" aria-pressed="${state.range === r}">${r}</button>`).join("")}</div></div>
           <div class="chart" data-chart="${s.key}"></div></div>` : ""}</li>`;
     }).join("");
+    const live = sec.series.some((s) => liveFor(id, s.key));
     el.innerHTML = `
-      <div class="card-h"><div><h2>${sec.title}</h2><p>${esc(sec.sub)}</p></div><span class="ccy">${sec.ccy}</span></div>
+      <div class="card-h"><div><h2>${sec.title}</h2><p>${esc(live ? sec.liveSub : sec.sub)}</p></div><span class="ccy">${sec.ccy}</span></div>
       ${errs.length ? `<div class="notice">${errs.map((e) => esc(e.source.replace(/ \(.*/, "")) + " did not respond." + (state.data.fromCache ? "" : " Showing saved values.")).join(" ")}</div>` : ""}
       <ul class="rows">${rows}</ul>
-      <div class="foot"><span>${esc(sec.when)}</span><a href="${sec.url}" target="_blank" rel="noopener">${esc(sec.site)} ↗</a></div>`;
+      <div class="foot"><span>${esc(live ? sec.liveWhen : sec.when)}</span><a href="${sec.url}" target="_blank" rel="noopener">${esc(sec.site)} ↗</a></div>`;
     el.querySelectorAll(".row").forEach((b) => b.addEventListener("click", () => {
       state.open = state.open === b.dataset.key ? null : b.dataset.key;
       renderAll();
@@ -288,7 +296,7 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
     const start = ed.toISOString().slice(0, 10);
     const vis = pts.filter(([d]) => d >= start);
     if (!vis.length) { box.innerHTML = `<div class="empty">No data in this range.</div>`; title.textContent = ""; return; }
-    title.innerHTML = vis.length > 1 ? `${state.range} ${changeHTML(sec, s, vis[0][1], vis[vis.length - 1][1], `Change from ${fmtDate(vis[0][0], true)}`)}` : "";
+    title.innerHTML = vis.length > 1 ? `${liveFor(id, key) ? "ECB " : ""}${state.range} ${changeHTML(sec, s, vis[0][1], vis[vis.length - 1][1], `Change from ${fmtDate(vis[0][0], true)}`)}` : "";
 
     const W = Math.max(box.clientWidth, 240), H = box.clientHeight;
     const P = { l: 6, r: 46, t: 10, b: 22 };
@@ -391,11 +399,23 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
     return { generatedAt: new Date().toISOString(), metrics, errors, partial: true };
   }
 
+  const liveFor = (id, key) => (id === "fx" && state.live && state.live.rates && state.live.rates[key]) || null;
+
+  // Live FX is optional: on any failure the FX rows fall back to the ECB reference rates
+  async function loadLive() {
+    try {
+      const r = await fetch("/api/live", { cache: "no-store" });
+      const j = r.ok ? await r.json() : null;
+      state.live = j && j.rates ? j : null;
+    } catch { state.live = null; }
+  }
+
   async function refresh(force) {
     const btn = $("#refresh"); btn.classList.add("busy"); btn.disabled = true;
     setStatus("busy", "Updating");
     const cached = loadCache();
     let fresh = null;
+    const liveP = loadLive();
     try {
       const r = await fetch(API + (force ? "?t=" + Date.now() : ""), { cache: "no-store" });
       if (!r.ok || !(r.headers.get("content-type") || "").includes("json")) throw new Error(r.status);
@@ -414,6 +434,7 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
     } else {
       setStatus("err", "No connection");
     }
+    await liveP;
     renderAll();
     btn.classList.remove("busy"); btn.disabled = false;
   }
@@ -429,7 +450,9 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
 
   matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", renderAll);
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && state.data && Date.now() - Date.parse(state.data.generatedAt) > 30 * 60e3) refresh(false);
+    if (document.visibilityState !== "visible" || !state.data) return;
+    if (Date.now() - Date.parse(state.data.generatedAt) > 30 * 60e3) refresh(false);
+    else if (!state.live || Date.now() - Date.parse(state.live.generatedAt) > 5 * 60e3) loadLive().then(() => renderSection("fx"));
   });
   $("#refresh").addEventListener("click", () => refresh(true));
 
