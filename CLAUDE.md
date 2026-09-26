@@ -4,7 +4,7 @@ Personal mobile dashboard for SOFR, SONIA and USD/GBP, USD/JPY. Hosted on Netlif
 
 ## Files
 - `index.html`: the whole app (HTML, CSS, JS in one file, no build step)
-- `netlify/functions/rates.mjs`: server function at `/api/rates`, fetches all data and returns one JSON payload, cached 30 minutes at Netlify's edge
+- `netlify/functions/rates.mjs`: server function at `/api/rates`, fetches all data and returns one JSON payload, cached 5 minutes at Netlify's edge. Do not add stale-while-revalidate: it made a normal page load show data up to a day old, while only the Refresh button (which adds `?t=`) got fresh data.
 - `netlify/functions/live.mjs`: server function at `/api/live`, intraday USD/GBP and USD/JPY from Twelve Data, cached 5 minutes at Netlify's edge
 - `netlify.toml`: Netlify config (publish root, functions folder)
 - `manifest.webmanifest`, `icon-180.png`, `icon-512.png`: iPhone home screen app

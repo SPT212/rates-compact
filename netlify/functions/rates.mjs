@@ -105,7 +105,7 @@ export default async (req) => {
       "Cache-Control": "public, max-age=0, must-revalidate",
       "Netlify-CDN-Cache-Control": errors.length
         ? "public, s-maxage=120"
-        : "public, s-maxage=1800, stale-while-revalidate=86400, durable",
+        : "public, s-maxage=300, durable",
     },
   });
 };

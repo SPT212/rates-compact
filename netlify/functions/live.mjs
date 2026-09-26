@@ -37,7 +37,7 @@ export default async () => {
       };
     }
     if (!Object.keys(out).length) throw new Error("Twelve Data returned no quotes");
-    return reply({ generatedAt: fetchedAt, rates: out }, "public, s-maxage=300, stale-while-revalidate=600, durable");
+    return reply({ generatedAt: fetchedAt, rates: out }, "public, s-maxage=300, durable");
   } catch (e) {
     return reply({ error: String(e.message || e) }, "public, s-maxage=60");
   }

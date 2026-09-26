@@ -451,7 +451,7 @@ button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-
   matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", renderAll);
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState !== "visible" || !state.data) return;
-    if (Date.now() - Date.parse(state.data.generatedAt) > 30 * 60e3) refresh(false);
+    if (Date.now() - Date.parse(state.data.generatedAt) > 5 * 60e3) refresh(false);
     else if (!state.live || Date.now() - Date.parse(state.live.generatedAt) > 5 * 60e3) loadLive().then(() => renderSection("fx"));
   });
   $("#refresh").addEventListener("click", () => refresh(true));
