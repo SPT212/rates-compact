@@ -1,4 +1,4 @@
-# Churchill Rates: project guide for Claude Code
+# Emastra Rates: project guide for Claude Code
 
 Personal mobile dashboard for SOFR, SONIA and USD/GBP, USD/JPY. Hosted on Netlify, deployed automatically from the `main` branch on GitHub.
 

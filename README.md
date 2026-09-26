@@ -1,4 +1,4 @@
-# Churchill Rates
+# Emastra Rates
 
 SOFR, SONIA, USD/GBP and USD/JPY with history charts, day-over-day changes and a currency converter.
 

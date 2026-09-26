@@ -2,7 +2,7 @@
 // Pulls SOFR + SOFR averages (NY Fed), SONIA + SONIA Compounded Index (Bank of England),
 // and USD/GBP, USD/JPY reference rates (ECB via Frankfurter). Returns one JSON payload.
 
-const UA = "Mozilla/5.0 (compatible; ChurchillRates/1.0)";
+const UA = "Mozilla/5.0 (compatible; EmastraRates/1.0)";
 const DAY = 86400000;
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
