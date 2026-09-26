@@ -291,7 +291,11 @@ button,input,select{font:inherit;color:inherit}
     const t0 = Date.parse(start), t1 = Date.parse(end);
     let lo = Math.min(...all), hi = Math.max(...all);
     const padv = (hi - lo) * 0.12 || Math.abs(hi) * 0.01 || 0.01; lo -= padv; hi += padv;
-    const { ticks, step } = niceTicks(lo, hi, 5);
+    // Snap the axis out to whole steps so the top and bottom labels always enclose the data
+    const { step } = niceTicks(lo, hi, 5);
+    lo = Math.floor(lo / step + 1e-9) * step; hi = Math.ceil(hi / step - 1e-9) * step;
+    const ticks = [];
+    for (let i = 0; lo + i * step <= hi + step * 1e-9; i++) ticks.push(+(lo + i * step).toFixed(10));
     const x = (d) => P.l + (Date.parse(d) - t0) / Math.max(t1 - t0, 1) * (W - P.l - P.r);
     const y = (v) => P.t + (hi - v) / (hi - lo) * (H - P.t - P.b);
     const ydp = Math.max(0, Math.min(4, -Math.floor(Math.log10(step)) + (step / Math.pow(10, Math.floor(Math.log10(step))) === 2.5 ? 1 : 0)));
