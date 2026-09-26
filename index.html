@@ -1,0 +1,476 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rates</title>
+<meta name="theme-color" content="#EDF0F4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0F1C2E" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Rates">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --canvas:#EDF0F4; --card:#FFFFFF; --card2:#F7F9FB;
+  --ink:#16283F; --ink2:#4A5B72; --muted:#7C8B9E; --faint:#A6B2C1;
+  --line:#E9EDF2; --line2:#DDE3EB;
+  --blue:#2C6FB5; --orange:#D2761C; --green:#1D7A4A; --red:#C22B2B;
+  --s1:#16283F; --s2:#2C6FB5; --s3:#D2761C;
+  --sel:#EAF1F9;
+  --shadow:0 1px 2px rgba(22,40,63,.04),0 6px 18px rgba(22,40,63,.05);
+  --sans:'Inter','Helvetica Neue',Helvetica,-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --canvas:#0F1C2E; --card:#16263B; --card2:#1B2E46;
+    --ink:#E8EEF6; --ink2:#B4C1D2; --muted:#8797AC; --faint:#5C6D84;
+    --line:#22364F; --line2:#2A4160;
+    --blue:#6FA6E0; --orange:#E89A4C; --green:#4CBF83; --red:#EF6B6B;
+    --s1:#E8EEF6; --s2:#6FA6E0; --s3:#E89A4C; --sel:#1E3552;
+    --shadow:0 1px 2px rgba(0,0,0,.2),0 6px 18px rgba(0,0,0,.18);
+  }
+}
+*,*::before,*::after{box-sizing:inherit}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--canvas);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;
+  font-feature-settings:"tnum" 1,"cv11" 1;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:6px}
+
+.wrap{max-width:1180px;margin:0 auto;padding:18px 16px 32px}
+.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:6px 2px 16px}
+.top h1{margin:0;font-size:30px;line-height:1.05;font-weight:700;letter-spacing:-.02em}
+.top .org{font-size:13px;color:var(--muted);margin-top:4px}
+.refresh{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line2);background:var(--card);
+  border-radius:999px;padding:9px 14px;font-size:14px;font-weight:600;color:var(--ink);cursor:pointer;box-shadow:var(--shadow);
+  min-height:40px}
+.refresh svg{width:16px;height:16px}
+.refresh.busy svg{animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.status{font-size:13px;color:var(--ink2);margin:-4px 2px 16px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex:none}
+.status.warn .dot{background:var(--orange)}
+.status.err .dot{background:var(--red)}
+
+.grid{display:grid;gap:14px;grid-template-columns:1fr;align-items:start}
+@media (min-width:760px){.grid{grid-template-columns:1fr 1fr}.fx{grid-column:1 / -1}}
+@media (min-width:1100px){.grid{grid-template-columns:1fr 1fr 1fr}.fx{grid-column:auto}}
+
+.card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);overflow:hidden;min-width:0}
+.card-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:16px 16px 8px}
+.card-h h2{margin:0;font-size:19px;font-weight:700;letter-spacing:-.01em}
+.card-h .ccy{font-size:12px;font-weight:600;color:var(--ink2);background:var(--card2);border:1px solid var(--line);
+  border-radius:6px;padding:2px 7px}
+.card-h p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+.notice{margin:0 16px 8px;font-size:12.5px;color:var(--orange);background:color-mix(in srgb,var(--orange) 10%,transparent);
+  border-radius:8px;padding:7px 10px}
+
+.rows{list-style:none;margin:0;padding:0 8px}
+.row{display:grid;grid-template-columns:10px 1fr auto;column-gap:10px;align-items:center;width:100%;text-align:left;
+  background:none;border:0;border-radius:10px;padding:11px 8px;cursor:pointer;border-top:1px solid var(--line)}
+.rows li:first-child .row{border-top-color:transparent}
+.row[aria-pressed="true"]{background:var(--sel);border-top-color:transparent}
+.rows li:has(.row[aria-pressed="true"]) + li .row{border-top-color:transparent}
+.sw{width:10px;height:10px;border-radius:3px;align-self:start;margin-top:6px}
+.lbl{font-size:14px;font-weight:600;color:var(--ink)}
+.asof{display:block;font-size:12px;color:var(--muted);font-weight:400;margin-top:1px}
+.val{text-align:right}
+.num{display:block;font-size:24px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.num small{font-size:15px;font-weight:500;color:var(--ink2);margin-left:1px}
+.chg{display:inline-block;font-size:12.5px;font-weight:600;margin-top:3px;white-space:nowrap}
+.up{color:var(--green)}.dn{color:var(--red)}.flat{color:var(--muted)}
+
+.chart-h{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 16px 2px}
+.chart-t{font-size:12.5px;color:var(--ink2);font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.seg{display:inline-flex;background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:2px;flex:none}
+.seg button{border:0;background:none;padding:5px 9px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;min-width:36px}
+.seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 2px rgba(22,40,63,.12)}
+.chart{position:relative;height:210px;margin:0 8px 12px;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.chart svg{display:block;width:100%;height:100%;overflow:visible}
+.chart .ax{font-size:10.5px;fill:var(--muted)}
+.chart .gl{stroke:var(--line);stroke-width:1}
+.tip{position:absolute;top:4px;pointer-events:none;background:var(--ink);color:var(--card);border-radius:8px;padding:6px 9px;
+  font-size:12px;line-height:1.4;white-space:nowrap;box-shadow:var(--shadow);opacity:0;transition:opacity .12s}
+.tip.on{opacity:1}
+.tip b{font-weight:600}
+.tip i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;font-style:normal}
+.empty{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;color:var(--muted);text-align:center;padding:0 24px}
+
+.conv{border-top:1px solid var(--line);padding:14px 16px 16px;background:var(--card2);container-type:inline-size}
+.conv h3{margin:0 0 10px;font-size:14px;font-weight:700}
+.conv-g{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end}
+.fld{display:flex;flex-direction:column;gap:4px;min-width:0}
+.fld label{font-size:12px;color:var(--muted)}
+.box{display:flex;border:1px solid var(--line2);border-radius:10px;background:var(--card);overflow:hidden}
+.box input{flex:1;min-width:0;border:0;background:none;padding:10px;font-size:17px;font-weight:600;outline:none}
+.box select{border:0;border-left:1px solid var(--line);background:var(--card2);padding:0 8px;font-size:14px;font-weight:600;cursor:pointer}
+.box output{flex:1;min-width:0;padding:10px;font-size:17px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.box:focus-within{border-color:var(--blue)}
+.swap{width:40px;height:44px;border:1px solid var(--line2);border-radius:10px;background:var(--card);cursor:pointer;display:grid;place-items:center}
+.swap svg{width:18px;height:18px}
+.conv .rate{font-size:12.5px;color:var(--ink2);margin-top:10px;line-height:1.55}
+.conv .rate span{display:block}
+.conv .rate .m{color:var(--muted)}
+@container (max-width:460px){
+  .conv-g{grid-template-columns:1fr}
+  .swap{justify-self:center;transform:rotate(90deg);height:36px}
+}
+
+.notes{margin:22px 4px 0;font-size:12.5px;color:var(--ink2);max-width:78ch}
+.notes h2{font-size:14px;margin:0 0 6px;color:var(--ink)}
+.notes p{margin:0 0 8px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Rates</h1>
+      <div class="org">Churchill Real Estate</div>
+    </div>
+    <button class="refresh" id="refresh" type="button" aria-label="Refresh rates">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg>
+      Refresh
+    </button>
+  </header>
+  <div class="status" id="status" role="status"><span class="dot"></span><span id="statusText">Loading rates</span></div>
+
+  <main class="grid">
+    <section class="card" id="sofr"></section>
+    <section class="card" id="sonia"></section>
+    <section class="card fx" id="fx"></section>
+  </main>
+
+  <footer class="notes">
+    <h2>Sources and Timing</h2>
+    <p><b>SOFR</b> Overnight, 30-Day and 90-Day come from the Federal Reserve Bank of New York, published around 8:00 AM ET each business day. Overnight is for the prior business day. 30-Day and 90-Day are backward-looking averages, the same series FRED lists as SOFR30DAYAVG and SOFR90DAYAVG. They are not CME Term SOFR, which is a forward-looking rate licensed by CME.</p>
+    <p><b>SONIA</b> Overnight comes from the Bank of England, published at 9:00 AM London for the prior business day. 30-Day and 90-Day are calculated from the Bank of England SONIA index on an ACT/365 basis, using the same method the New York Fed uses for its SOFR averages.</p>
+    <p><b>Exchange Rates</b> are ECB Reference Rates, set once a day around 4:00 PM Frankfurt time. They are Indicative Mid rates, not dealing rates.</p>
+  </footer>
+</div>
+
+<script>
+(() => {
+  const API = "/api/rates";
+  const CACHE_KEY = "churchill-rates-v1";
+  const RANGES = [["1M", 1], ["3M", 3], ["6M", 6], ["1Y", 12]];
+
+  const SECTIONS = {
+    sofr: {
+      title: "SOFR", ccy: "USD", sub: "Secured Overnight Financing Rate, New York Fed",
+      kind: "rate", sources: ["NY Fed (SOFR)"],
+      series: [
+        { key: "sofr_on", label: "Overnight", color: "--s1", dp: 2 },
+        { key: "sofr_30", label: "30-Day", color: "--s2", dp: 4 },
+        { key: "sofr_90", label: "90-Day", color: "--s3", dp: 4 },
+      ],
+    },
+    sonia: {
+      title: "SONIA", ccy: "GBP", sub: "Sterling Overnight Index Average, Bank of England",
+      kind: "rate", sources: ["Bank of England (SONIA)"],
+      series: [
+        { key: "sonia_on", label: "Overnight", color: "--s1", dp: 4 },
+        { key: "sonia_30", label: "30-Day", color: "--s2", dp: 4 },
+        { key: "sonia_90", label: "90-Day", color: "--s3", dp: 4 },
+      ],
+    },
+    fx: {
+      title: "Exchange Rates", ccy: "USD", sub: "ECB Reference Rates, Indicative Mid",
+      kind: "fx", single: true, sources: ["ECB (FX)"],
+      series: [
+        { key: "usd_gbp", label: "1 USD in Pounds", sym: "£", color: "--s2", dp: 4 },
+        { key: "usd_jpy", label: "1 USD in Yen", sym: "¥", color: "--s3", dp: 2 },
+      ],
+    },
+  };
+
+  const state = { data: null, range: { sofr: "3M", sonia: "3M", fx: "3M" }, sel: { sofr: "sofr_30", sonia: "sonia_30", fx: "usd_gbp" } };
+  const $ = (s, r = document) => r.querySelector(s);
+  const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+  const MON = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const fmtDate = (d, withYear) => { const [y, m, dd] = d.split("-"); return `${+dd} ${MON[+m - 1]}${withYear ? " " + y : ""}`; };
+  const fmtNum = (v, dp) => v.toLocaleString("en-US", { minimumFractionDigits: dp, maximumFractionDigits: dp });
+
+  function lastTwo(pts) {
+    if (!pts || !pts.length) return null;
+    const [d, v] = pts[pts.length - 1];
+    const prev = pts.length > 1 ? pts[pts.length - 2] : null;
+    return { d, v, pd: prev && prev[0], pv: prev && prev[1] };
+  }
+
+  function changeHTML(sec, s, lt) {
+    if (!lt || lt.pv == null) return `<span class="chg flat">No prior value</span>`;
+    const diff = lt.v - lt.pv;
+    if (sec.kind === "rate") {
+      const bp = diff * 100;
+      const r = Math.round(bp * 100) / 100;
+      const cls = r > 0 ? "up" : r < 0 ? "dn" : "flat";
+      const arrow = r > 0 ? "▲" : r < 0 ? "▼" : "";
+      const txt = r === 0 ? "Unchanged" : `${arrow} ${fmtNum(Math.abs(r), Math.abs(r) < 1 ? 2 : 1)} bp`;
+      return `<span class="chg ${cls}" title="Change from ${fmtDate(lt.pd, true)}">${txt}</span>`;
+    }
+    const pct = diff / lt.pv * 100;
+    const cls = diff > 0 ? "up" : diff < 0 ? "dn" : "flat";
+    const arrow = diff > 0 ? "▲" : diff < 0 ? "▼" : "";
+    if (Math.abs(diff) < Math.pow(10, -s.dp) / 2) return `<span class="chg flat">Unchanged</span>`;
+    return `<span class="chg ${cls}" title="Change from ${fmtDate(lt.pd, true)}">${arrow} ${fmtNum(Math.abs(diff), s.dp)} (${fmtNum(Math.abs(pct), 2)}%)</span>`;
+  }
+
+  function renderSection(id) {
+    const sec = SECTIONS[id], el = document.getElementById(id);
+    const m = (state.data && state.data.metrics) || {};
+    const errs = ((state.data && state.data.errors) || []).filter((e) => sec.sources.includes(e.source));
+    const selS = sec.series.find((s) => s.key === state.sel[id]);
+    const rows = sec.series.map((s) => {
+      const lt = lastTwo(m[s.key]);
+      const value = !lt ? `<span class="num">–</span>`
+        : sec.kind === "rate" ? `<span class="num">${fmtNum(lt.v, s.dp)}<small>%</small></span>`
+        : `<span class="num"><small>${s.sym}</small>${fmtNum(lt.v, s.dp)}</span>`;
+      return `<li><button class="row" type="button" data-key="${s.key}" aria-pressed="${s.key === state.sel[id]}">
+        <span class="sw" style="background:var(${s.color})"></span>
+        <span class="lbl">${esc(s.label)}<span class="asof">${lt ? "As of " + fmtDate(lt.d, false) : "Not available"}</span></span>
+        <span class="val">${value}${lt ? changeHTML(sec, s, lt) : ""}</span></button></li>`;
+    }).join("");
+    const segs = RANGES.map(([r]) => `<button type="button" data-range="${r}" aria-pressed="${state.range[id] === r}">${r}</button>`).join("");
+    const chartTitle = selS.label;
+    el.innerHTML = `
+      <div class="card-h"><div><h2>${sec.title}</h2><p>${sec.sub}</p></div><span class="ccy">${sec.ccy}</span></div>
+      ${errs.length ? `<div class="notice">${errs.map((e) => esc(e.source.replace(/ \(.*/, "")) + " did not respond. " + (state.data.fromCache ? "" : "Showing the last saved values.")).join(" ")}</div>` : ""}
+      <ul class="rows">${rows}</ul>
+      <div class="chart-h"><span class="chart-t">${esc(chartTitle)}</span><div class="seg" role="group" aria-label="Chart range">${segs}</div></div>
+      <div class="chart" data-chart="${id}"></div>
+      ${id === "fx" ? converterHTML() : ""}`;
+    el.querySelectorAll(".row").forEach((b) => b.addEventListener("click", () => { state.sel[id] = b.dataset.key; renderSection(id); }));
+    el.querySelectorAll(".seg button").forEach((b) => b.addEventListener("click", () => { state.range[id] = b.dataset.range; renderSection(id); }));
+    drawChart(id);
+    if (id === "fx") wireConverter();
+  }
+
+  // ---------- chart ----------
+  function niceTicks(min, max, n) {
+    const span = max - min || Math.abs(max) || 1;
+    const raw = span / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+    const step = [1, 2, 2.5, 5, 10].map((x) => x * mag).find((x) => span / x <= n) || 10 * mag;
+    const out = [];
+    for (let v = Math.ceil(min / step) * step; v <= max + step * 1e-9; v += step) out.push(+v.toFixed(10));
+    return { ticks: out, step };
+  }
+
+  function drawChart(id) {
+    const sec = SECTIONS[id];
+    const box = document.querySelector(`[data-chart="${id}"]`);
+    if (!box) return;
+    const m = (state.data && state.data.metrics) || {};
+    const months = RANGES.find(([r]) => r === state.range[id])[1];
+    const list = (sec.single ? sec.series.filter((s) => s.key === state.sel[id]) : sec.series)
+      .map((s) => ({ ...s, pts: m[s.key] || [] })).filter((s) => s.pts.length);
+    if (!list.length) { box.innerHTML = `<div class="empty">No history available yet. Tap Refresh to try again.</div>`; return; }
+
+    const end = list.reduce((a, s) => (s.pts[s.pts.length - 1][0] > a ? s.pts[s.pts.length - 1][0] : a), "");
+    const ed = new Date(end + "T00:00:00Z"); ed.setUTCMonth(ed.getUTCMonth() - months);
+    const start = ed.toISOString().slice(0, 10);
+    list.forEach((s) => { s.vis = s.pts.filter(([d]) => d >= start); });
+    const all = list.flatMap((s) => s.vis.map(([, v]) => v));
+    if (!all.length) { box.innerHTML = `<div class="empty">No data in this range.</div>`; return; }
+
+    const W = Math.max(box.clientWidth, 260), H = box.clientHeight;
+    const P = { l: 8, r: 46, t: 14, b: 24 };
+    const t0 = Date.parse(start), t1 = Date.parse(end);
+    let lo = Math.min(...all), hi = Math.max(...all);
+    const padv = (hi - lo) * 0.12 || Math.abs(hi) * 0.01 || 0.01; lo -= padv; hi += padv;
+    const { ticks, step } = niceTicks(lo, hi, 5);
+    const x = (d) => P.l + (Date.parse(d) - t0) / Math.max(t1 - t0, 1) * (W - P.l - P.r);
+    const y = (v) => P.t + (hi - v) / (hi - lo) * (H - P.t - P.b);
+    const ydp = Math.max(0, Math.min(4, -Math.floor(Math.log10(step)) + (step / Math.pow(10, Math.floor(Math.log10(step))) === 2.5 ? 1 : 0)));
+
+    const grid = ticks.map((v) => `<line class="gl" x1="${P.l}" x2="${W - P.r + 4}" y1="${y(v)}" y2="${y(v)}"/>
+      <text class="ax" x="${W - P.r + 8}" y="${y(v) + 3.5}">${fmtNum(v, ydp)}${sec.kind === "rate" ? "%" : ""}</text>`).join("");
+
+    const nx = W < 420 ? 3 : 4, xt = [];
+    for (let i = 0; i <= nx; i++) {
+      const t = new Date(t0 + (t1 - t0) * i / nx);
+      const lbl = months >= 6 ? `${MON[t.getUTCMonth()]} '${String(t.getUTCFullYear()).slice(2)}` : `${t.getUTCDate()} ${MON[t.getUTCMonth()]}`;
+      const px = P.l + (W - P.l - P.r) * i / nx;
+      xt.push(`<text class="ax" x="${px}" y="${H - 6}" text-anchor="${i === 0 ? "start" : i === nx ? "end" : "middle"}">${lbl}</text>`);
+    }
+
+    const path = (pts) => pts.map(([d, v], i) => `${i ? "L" : "M"}${x(d).toFixed(1)},${y(v).toFixed(1)}`).join("");
+    const sel = list.find((s) => s.key === state.sel[id]) || list[0];
+    const others = list.filter((s) => s !== sel);
+    const selColor = css(sel.color);
+    const area = sel.vis.length > 1 ? `${path(sel.vis)}L${x(sel.vis[sel.vis.length - 1][0]).toFixed(1)},${H - P.b}L${x(sel.vis[0][0]).toFixed(1)},${H - P.b}Z` : "";
+    const gid = `g-${id}`;
+
+    box.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(sec.title)} History Chart">
+      <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${selColor}" stop-opacity=".16"/><stop offset="1" stop-color="${selColor}" stop-opacity="0"/></linearGradient></defs>
+      ${grid}${xt.join("")}
+      ${area ? `<path d="${area}" fill="url(#${gid})"/>` : ""}
+      ${others.map((s) => `<path d="${path(s.vis)}" fill="none" stroke="${css(s.color)}" stroke-width="1.5" stroke-opacity=".45" stroke-linejoin="round"/>`).join("")}
+      <path d="${path(sel.vis)}" fill="none" stroke="${selColor}" stroke-width="2.25" stroke-linejoin="round" stroke-linecap="round"/>
+      <g class="hover" style="display:none"><line y1="${P.t}" y2="${H - P.b}" stroke="${css("--faint")}" stroke-dasharray="3 3"/>${list.map((s) => `<circle r="3.5" fill="${css("--card")}" stroke="${css(s.color)}" stroke-width="2"/>`).join("")}</g>
+      <rect x="${P.l}" y="0" width="${W - P.l - P.r}" height="${H}" fill="transparent"/>
+    </svg><div class="tip"></div>`;
+
+    const svg = box.querySelector("svg"), hov = svg.querySelector(".hover"), tip = box.querySelector(".tip");
+    const line = hov.querySelector("line"), dots = hov.querySelectorAll("circle");
+    const dates = [...new Set(list.flatMap((s) => s.vis.map(([d]) => d)))].sort();
+    const at = (s, d) => { let r = null; for (const p of s.vis) { if (p[0] <= d) r = p; else break; } return r; };
+
+    function show(ev) {
+      const rect = svg.getBoundingClientRect();
+      const px = (ev.clientX - rect.left) * (W / rect.width);
+      const t = t0 + (px - P.l) / (W - P.l - P.r) * (t1 - t0);
+      let best = dates[0];
+      for (const d of dates) if (Math.abs(Date.parse(d) - t) < Math.abs(Date.parse(best) - t)) best = d;
+      const cx = x(best);
+      hov.style.display = ""; line.setAttribute("x1", cx); line.setAttribute("x2", cx);
+      const vals = list.map((s, i) => {
+        const p = at(s, best);
+        if (p) { dots[i].setAttribute("cx", x(p[0])); dots[i].setAttribute("cy", y(p[1])); dots[i].style.display = ""; } else dots[i].style.display = "none";
+        return p ? `<div><i style="background:${css(s.color)}"></i>${esc(s.label)} <b>${sec.kind === "rate" ? fmtNum(p[1], s.dp) + "%" : (s.sym || "") + fmtNum(p[1], s.dp)}</b></div>` : "";
+      }).join("");
+      tip.innerHTML = `<div style="opacity:.7;margin-bottom:2px">${fmtDate(best, true)}</div>${vals}`;
+      tip.classList.add("on");
+      const bw = box.clientWidth, tw = tip.offsetWidth, sx = cx * (rect.width / W);
+      tip.style.left = Math.min(Math.max(sx - tw / 2, 0), bw - tw) + "px";
+      tip.style.top = (sx > bw * 0.35 && sx < bw * 0.65 ? 4 : 4) + "px";
+    }
+    const hide = () => { hov.style.display = "none"; tip.classList.remove("on"); };
+    svg.addEventListener("pointermove", show);
+    svg.addEventListener("pointerdown", show);
+    svg.addEventListener("pointerleave", hide);
+    svg.addEventListener("pointercancel", hide);
+  }
+
+  // ---------- converter ----------
+  const conv = { amt: "1,000", from: "USD", to: "GBP" };
+  const CCY = { USD: { dp: 2, sym: "$" }, GBP: { dp: 2, sym: "£" }, JPY: { dp: 0, sym: "¥" } };
+  function perUSD() {
+    const m = (state.data && state.data.metrics) || {};
+    const g = lastTwo(m.usd_gbp), j = lastTwo(m.usd_jpy);
+    return { USD: 1, GBP: g && g.v, JPY: j && j.v, d: g && g.d };
+  }
+  function converterHTML() {
+    const opt = (sel) => Object.keys(CCY).map((c) => `<option ${c === sel ? "selected" : ""}>${c}</option>`).join("");
+    return `<div class="conv"><h3>Currency Converter</h3>
+      <div class="conv-g">
+        <div class="fld"><label for="cvAmt">Amount</label>
+          <div class="box"><input id="cvAmt" inputmode="decimal" autocomplete="off" value="${esc(conv.amt)}" aria-label="Amount to convert">
+          <select id="cvFrom" aria-label="From currency">${opt(conv.from)}</select></div></div>
+        <button class="swap" id="cvSwap" type="button" aria-label="Swap currencies"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h13l-4-4"/><path d="M17 17H4l4 4"/></svg></button>
+        <div class="fld"><label for="cvTo">Converted</label>
+          <div class="box"><output id="cvOut" for="cvAmt cvFrom cvTo" aria-live="polite">–</output>
+          <select id="cvTo" aria-label="To currency">${opt(conv.to)}</select></div></div>
+      </div>
+      <div class="rate" id="cvRate"></div></div>`;
+  }
+  function wireConverter() {
+    const amt = $("#cvAmt"), from = $("#cvFrom"), to = $("#cvTo"), out = $("#cvOut"), rate = $("#cvRate");
+    const calc = () => {
+      conv.amt = amt.value; conv.from = from.value; conv.to = to.value;
+      const r = perUSD();
+      const n = parseFloat(String(amt.value).replace(/[^0-9.\-]/g, ""));
+      if (!r[conv.from] || !r[conv.to]) { out.textContent = "–"; rate.textContent = "Exchange rates are not available right now."; return; }
+      const k = r[conv.to] / r[conv.from];
+      out.textContent = Number.isFinite(n) ? CCY[conv.to].sym + fmtNum(n * k, CCY[conv.to].dp) : "–";
+      const inv = 1 / k;
+      rate.innerHTML = `<span>1 ${conv.from} = ${fmtNum(k, k < 1 ? 5 : 4)} ${conv.to}</span><span>1 ${conv.to} = ${fmtNum(inv, inv < 1 ? 5 : 4)} ${conv.from}</span>` + (r.d ? `<span class="m">ECB Reference Rate, ${fmtDate(r.d, true)}</span>` : "");
+    };
+    amt.addEventListener("input", calc);
+    amt.addEventListener("blur", () => { const n = parseFloat(amt.value.replace(/[^0-9.\-]/g, "")); if (Number.isFinite(n)) { amt.value = fmtNum(n, n % 1 ? 2 : 0); calc(); } });
+    amt.addEventListener("focus", () => amt.select());
+    from.addEventListener("change", () => { if (from.value === to.value) to.value = conv.from; calc(); });
+    to.addEventListener("change", () => { if (to.value === from.value) from.value = conv.to; calc(); });
+    $("#cvSwap").addEventListener("click", () => { const a = from.value; from.value = to.value; to.value = a; calc(); });
+    calc();
+  }
+
+  // ---------- data ----------
+  function setStatus(kind, text) {
+    const s = $("#status"); s.className = "status " + kind; $("#statusText").textContent = text;
+  }
+  const timeStr = (iso) => new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+
+  function loadCache() { try { return JSON.parse(localStorage.getItem(CACHE_KEY)); } catch { return null; } }
+  function saveCache(d) { try { localStorage.setItem(CACHE_KEY, JSON.stringify(d)); } catch {} }
+
+  // Direct fallback if the site's /api/rates function is unreachable (e.g. file opened locally).
+  // NY Fed and Frankfurter allow browser requests; the Bank of England does not.
+  async function direct() {
+    const j = async (u) => { const r = await fetch(u); if (!r.ok) throw new Error(r.status); return r.json(); };
+    const from = new Date(Date.now() - 400 * 864e5).toISOString().slice(0, 10);
+    const metrics = {}, errors = [];
+    try {
+      const [o, a] = await Promise.all([j("https://markets.newyorkfed.org/api/rates/secured/sofr/last/280.json"), j("https://markets.newyorkfed.org/api/rates/secured/sofrai/last/280.json")]);
+      const asc = (x) => x.refRates.slice().sort((p, q) => (p.effectiveDate < q.effectiveDate ? -1 : 1));
+      metrics.sofr_on = asc(o).map((r) => [r.effectiveDate, r.percentRate]);
+      metrics.sofr_30 = asc(a).map((r) => [r.effectiveDate, r.average30day]);
+      metrics.sofr_90 = asc(a).map((r) => [r.effectiveDate, r.average90day]);
+    } catch { errors.push({ source: "NY Fed (SOFR)" }); }
+    try {
+      const f = await j(`https://api.frankfurter.dev/v1/${from}..?from=USD&to=GBP,JPY`);
+      const ds = Object.keys(f.rates).sort();
+      metrics.usd_gbp = ds.map((d) => [d, f.rates[d].GBP]);
+      metrics.usd_jpy = ds.map((d) => [d, f.rates[d].JPY]);
+    } catch { errors.push({ source: "ECB (FX)" }); }
+    errors.push({ source: "Bank of England (SONIA)" });
+    return { generatedAt: new Date().toISOString(), metrics, errors, partial: true };
+  }
+
+  async function refresh(force) {
+    const btn = $("#refresh"); btn.classList.add("busy"); btn.disabled = true;
+    setStatus("", "Updating");
+    const cached = loadCache();
+    let fresh = null;
+    try {
+      const r = await fetch(API + (force ? "?t=" + Date.now() : ""), { cache: "no-store" });
+      if (!r.ok || !(r.headers.get("content-type") || "").includes("json")) throw new Error(r.status);
+      fresh = await r.json();
+    } catch {
+      try { fresh = await direct(); } catch { fresh = null; }
+    }
+    if (fresh) {
+      // keep previously saved series for any source that failed this time
+      if (cached && cached.metrics) for (const k of Object.keys(cached.metrics)) if (!fresh.metrics[k] || !fresh.metrics[k].length) fresh.metrics[k] = cached.metrics[k];
+      state.data = fresh; saveCache({ ...fresh, errors: [] });
+      const n = fresh.errors.length;
+      setStatus(n ? "warn" : "", n ? `Updated ${timeStr(fresh.generatedAt)}. ${n === 1 ? "One source" : n + " sources"} did not respond.` : `Updated ${timeStr(fresh.generatedAt)}`);
+    } else if (cached) {
+      state.data = { ...cached, fromCache: true };
+      setStatus("err", `Offline. Showing rates saved ${timeStr(cached.generatedAt)}.`);
+    } else {
+      setStatus("err", "Could not reach any rate source. Check your connection and tap Refresh.");
+    }
+    renderAll();
+    btn.classList.remove("busy"); btn.disabled = false;
+  }
+
+  function renderAll() { Object.keys(SECTIONS).forEach(renderSection); }
+
+  let rt; window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(() => Object.keys(SECTIONS).forEach(drawChart), 120); });
+  matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => Object.keys(SECTIONS).forEach(drawChart));
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && state.data && Date.now() - Date.parse(state.data.generatedAt) > 30 * 60e3) refresh(false);
+  });
+  $("#refresh").addEventListener("click", () => refresh(true));
+
+  const c = loadCache();
+  if (c) { state.data = { ...c }; renderAll(); setStatus("", `Saved ${timeStr(c.generatedAt)}`); } else renderAll();
+  refresh(false);
+})();
+</script>
+</body>
+</html>
